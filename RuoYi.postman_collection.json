@@ -1,0 +1,2156 @@
+{
+  "info": {
+    "_postman_id": "eaa5056d-fc78-49c7-abaf-d8de2ffa77aa",
+    "name": "RuoYi",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55533296",
+    "_collection_link": "https://go.postman.co/collection/55533296-eaa5056d-fc78-49c7-abaf-d8de2ffa77aa?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "增删改查",
+      "item": [
+        {
+          "name": "登录-获取token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 解析响应 JSON\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "// 判断登录是否成功\r",
+                  "if (response.code === 200 && response.token) {\r",
+                  "    // 将 token 保存到当前选中的环境变量中\r",
+                  "    pm.environment.set(\"token\", response.token);\r",
+                  "    console.log(\"Token 已保存:\", response.token);\r",
+                  "} else {\r",
+                  "    console.log(\"登录失败:\", response.msg);\r",
+                  "}\r",
+                  "\r",
+                  "// 可选：断言状态码\r",
+                  "pm.test(\"登录成功且返回 token\", function () {\r",
+                  "    pm.expect(response.code).to.equal(200);\r",
+                  "    pm.expect(response.token).to.be.a('string').and.not.empty;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "packages": {},
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json;charset=UTF-8",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin123\"   \r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "查询用户列表",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"状态码200\", () => pm.response.to.have.status(200));\r",
+                  "const jsonData = pm.response.json();\r",
+                  "pm.test(\"业务码200\", () => pm.expect(jsonData.code).to.equal(200));\r",
+                  "pm.test(\"响应时间 < 500ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));\r",
+                  "pm.test(\"结构断言：rows 是数组，total 是数字\", () => {\r",
+                  "    pm.expect(jsonData).to.have.property(\"rows\");\r",
+                  "    pm.expect(jsonData).to.have.property(\"total\");\r",
+                  "    pm.expect(jsonData.rows).to.be.an(\"array\");\r",
+                  "    pm.expect(jsonData.total).to.be.a(\"number\");\r",
+                  "});\r",
+                  "\r",
+                  "// 如果 rows 不为空，检查第一个用户对象的关键字段\r",
+                  "if (jsonData.rows && jsonData.rows.length > 0) {\r",
+                  "    const firstUser = jsonData.rows[0];\r",
+                  "    pm.test(\"用户对象包含关键字段\", () => {\r",
+                  "        pm.expect(firstUser).to.have.property(\"userId\");\r",
+                  "        pm.expect(firstUser).to.have.property(\"userName\");\r",
+                  "        pm.expect(firstUser).to.have.property(\"status\");\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/system/user/list?pageNum=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "system",
+                "user",
+                "list"
+              ],
+              "query": [
+                {
+                  "key": "pageNum",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "查询主用户信息",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"状态码200\", () => pm.response.to.have.status(200));\r",
+                  "const jsonData = pm.response.json();\r",
+                  "pm.test(\"业务码200\", () => pm.expect(jsonData.code).to.equal(200));\r",
+                  "pm.test(\"返回主用户admin数据\", () => pm.expect(jsonData.data).to.be.an('object'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/system/user/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "system",
+                "user",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "添加用户",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"状态码200\", () => pm.response.to.have.status(200));\r",
+                  "const jsonData = pm.response.json();\r",
+                  "pm.test(\"添加成功，业务码为200\", () => {\r",
+                  "    pm.expect(jsonData.code).to.equal(200);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// 生成时间戳\r",
+                  "const timestamp = Date.now();\r",
+                  "// 构造唯一的用户名（例如 test_1718456789123）\r",
+                  "const dynamicUserName = \"test_\" + timestamp;\r",
+                  "// 将用户名存入环境变量（供后续查询使用）\r",
+                  "pm.environment.set(\"dynamicUserName\", dynamicUserName);\r",
+                  "\r",
+                  "console.log(\"生成的用户名:\", dynamicUserName);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"deptId\": 100,                           // 部门ID（必填）。100 通常对应“若依科技”顶级部门，根据实际情况可修改\r\n    \"userName\": \"{{dynamicUserName}}\",       // 登录用户名（必填）。使用动态变量确保唯一性，例如 test_1718456789123\r\n    \"nickName\": \"{{dynamicUserName}}\",       // 用户昵称（必填）。显示名称，可与用户名相同或单独设置\r\n    \"password\": \"123456\",                    // 登录密码（必填）。长度通常不少于5位，建议使用复杂密码\r\n    \"phonenumber\": \"\",                       // 手机号（可选）。若系统开启手机号必填校验，则需提供合法手机号\r\n    \"email\": \"\",                             // 邮箱（可选）。若系统开启邮箱必填校验，则需提供合法邮箱地址\r\n    \"status\": \"0\",                           // 账号状态（必填）。\"0\" = 正常，\"1\" = 禁用\r\n    \"postIds\": [],                           // 岗位ID列表（可选）。数组格式，如 [1, 2] 表示分配多个岗位\r\n    \"roleIds\": [],                           // 角色ID列表（可选）。数组格式，如 [2] 表示分配普通角色\r\n    \"sex\": \"\",                               // 性别（可选）。\"0\" = 男，\"1\" = 女，\"2\" = 未知\r\n    \"remark\": \"\"                             // 备注（可选）。用于填写额外说明信息\r\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/system/user",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "system",
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "获取uid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 解析响应\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "// 断言（可选）\r",
+                  "pm.test(\"状态码200\", () => pm.response.to.have.status(200));\r",
+                  "pm.test(\"业务code为200\", () => pm.expect(jsonData.code).to.equal(200));\r",
+                  "\r",
+                  "// 提取 userId\r",
+                  "if (jsonData.code === 200 && jsonData.rows && jsonData.rows.length > 0) {\r",
+                  "    const userId = jsonData.rows[0].userId;\r",
+                  "    pm.environment.set(\"newUserId\", userId);\r",
+                  "    console.log(\"成功提取 userId:\", userId);\r",
+                  "} else {\r",
+                  "    console.log(\"未找到用户, dynamicUserName:\", pm.environment.get(\"dynamicUserName\"));\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/system/user/list?userName={{dynamicUserName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "system",
+                "user",
+                "list"
+              ],
+              "query": [
+                {
+                  "key": "userName",
+                  "value": "{{dynamicUserName}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "修改用户",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 1. HTTP 状态码断言\r",
+                  "pm.test(\"HTTP 状态码为 200\", () => pm.response.to.have.status(200));\r",
+                  "\r",
+                  "// 2. 解析响应体\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "// 3. 业务 code 断言\r",
+                  "pm.test(\"业务 code 为 200\", () => pm.expect(jsonData.code).to.equal(200));\r",
+                  "\r",
+                  "// 4. msg 断言\r",
+                  "pm.test(\"msg 为 '操作成功'\", () => pm.expect(jsonData.msg).to.equal(\"操作成功\"));\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"userId\": {{newUserId}},\r\n    \"nickName\": \"newNick\",\r\n    \"userName\":\"1\"  //无法修改，但又不能为空.所以可以随便输一个，不会改用户名字\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/system/user",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "system",
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "删除用户",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// HTTP 状态码断言\r",
+                  "pm.test(\"HTTP 状态码为 200\", () => pm.response.to.have.status(200));\r",
+                  "\r",
+                  "// 解析响应体\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "// 业务 code 断言（若依成功删除返回 200）\r",
+                  "pm.test(\"业务 code 为 200\", () => pm.expect(jsonData.code).to.equal(200));\r",
+                  "\r",
+                  "// msg 断言（可选）\r",
+                  "pm.test(\"删除成功'\", () => pm.expect(jsonData.msg).to.equal(\"操作成功\"));\r",
+                  "\r",
+                  "// 响应时间断言\r",
+                  "pm.test(\"响应时间 < 500ms\", () => pm.expect(pm.response.responseTime).to.be.below(500));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/system/user/{{newUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "system",
+                "user",
+                "{{newUserId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "异常",
+      "item": [
+        {
+          "name": "登录-获取token Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 解析响应 JSON\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "// 判断登录是否成功\r",
+                  "if (response.code === 200 && response.token) {\r",
+                  "    // 将 token 保存到当前选中的环境变量中\r",
+                  "    pm.environment.set(\"token\", response.token);\r",
+                  "    console.log(\"Token 已保存:\", response.token);\r",
+                  "} else {\r",
+                  "    console.log(\"登录失败:\", response.msg);\r",
+                  "}\r",
+                  "\r",
+                  "// 可选：断言状态码\r",
+                  "pm.test(\"登录成功且返回 token\", function () {\r",
+                  "    pm.expect(response.code).to.equal(200);\r",
+                  "    pm.expect(response.token).to.be.a('string').and.not.empty;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "packages": {},
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json;charset=UTF-8",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin123\"   \r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "新增用户",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ============================================================\r",
+                  "// 新增用户模块 - 批量测试（只断言 HTTP + code）\r",
+                  "// 脚本位置：Post-response\r",
+                  "// ============================================================\r",
+                  "\r",
+                  "const timestamp = Date.now();\r",
+                  "const baseUrl = pm.environment.get(\"baseUrl\");\r",
+                  "const token = pm.environment.get(\"token\");\r",
+                  "\r",
+                  "const baseBody = {\r",
+                  "    nickName: \"测试\",\r",
+                  "    password: \"123456\",\r",
+                  "    status: \"0\"\r",
+                  "};\r",
+                  "\r",
+                  "const testCases = [\r",
+                  "    // ===== 正常用例 =====\r",
+                  "    {\r",
+                  "        caseName: \"正常新增（仅必填）\",\r",
+                  "        body: { ...baseBody, userName: \"te\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 200,\r",
+                  "        needClean: true\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"正常新增（全部字段）\",\r",
+                  "        body: {\r",
+                  "            ...baseBody,\r",
+                  "            userName: \"test_all_\" + timestamp,\r",
+                  "            deptId: 100,\r",
+                  "            phonenumber: \"13800138000\",\r",
+                  "            email: \"test_all_\" + timestamp + \"@test.com\",\r",
+                  "            roleIds: [2]\r",
+                  "        },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 200,\r",
+                  "        needClean: true\r",
+                  "    },\r",
+                  "    // ===== 异常：必填校验（HTTP 200，业务 code 500） =====\r",
+                  "    {\r",
+                  "        caseName: \"用户名为空（不传字段）\",\r",
+                  "        body: { ...baseBody, nickName: \"测试\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"用户名为空（传空字符串）\",\r",
+                  "        body: { ...baseBody, userName: \"\", nickName: \"测试\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"昵称为空（不传字段）\",\r",
+                  "        body: { ...baseBody, userName: \"test_nick_missing_\" + timestamp },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"昵称为空（传空字符串）\",\r",
+                  "        body: { ...baseBody, userName: \"test_nick_empty_\" + timestamp, nickName: \"\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"密码为空\",\r",
+                  "        body: { ...baseBody, userName: \"test_pwd_empty_\" + timestamp, password: \"\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    // ===== 异常：唯一性校验 =====\r",
+                  "    {\r",
+                  "        caseName: \"用户名重复（admin）\",\r",
+                  "        body: { ...baseBody, userName: \"admin\", nickName: \"测试\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    // ===== 异常：长度边界 =====\r",
+                  "    {\r",
+                  "        caseName: \"用户名长度不足（1位）\",\r",
+                  "        body: { ...baseBody, userName: \"t\", nickName: \"测试\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"用户名长度超长（21位）\",\r",
+                  "        body: { ...baseBody, userName: \"aaaaaaaaaaaaaaaaaaaaa\", nickName: \"测试\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"密码长度不足（5位）\",\r",
+                  "        body: { ...baseBody, userName: \"test_pwd_5_\" + timestamp, password: \"12345\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"密码长度超长（21位）\",\r",
+                  "        body: { ...baseBody, userName: \"test_pwd_long_\" + timestamp, password: \"123456789012345678901\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    // ===== 异常：业务字段 =====\r",
+                  "    {\r",
+                  "        caseName: \"部门ID不存在（99999）\",\r",
+                  "        body: { ...baseBody, userName: \"test_dept_\" + timestamp, deptId: 99999 },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"手机号格式错误\",\r",
+                  "        body: { ...baseBody, userName: \"test_phone_\" + timestamp, phonenumber: \"123\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"手机号重复（13800138000）\",\r",
+                  "        body: { ...baseBody, userName: \"test_phone_dup_\" + timestamp, phonenumber: \"15666666666\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"邮箱格式错误\",\r",
+                  "        body: { ...baseBody, userName: \"test_email_\" + timestamp, email: \"abc\" },\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500,\r",
+                  "        needClean: false\r",
+                  "    },\r",
+                  "    // ===== 异常：认证失败（HTTP 401） =====\r",
+                  "    {\r",
+                  "        caseName: \"不携带token新增\",\r",
+                  "        body: { ...baseBody, userName: \"test_no_token_\" + timestamp },\r",
+                  "        httpCode: 401,\r",
+                  "        businessCode: 401,\r",
+                  "        needClean: false,\r",
+                  "        skipAuth: true\r",
+                  "    }\r",
+                  "];\r",
+                  "\r",
+                  "// 清理函数\r",
+                  "function deleteUserByUserName(userName) {\r",
+                  "    if (!userName) return;\r",
+                  "    pm.sendRequest({\r",
+                  "        url: baseUrl + \"/system/user/list?userName=\" + userName + \"&pageNum=1&pageSize=10\",\r",
+                  "        method: 'GET',\r",
+                  "        header: { 'Authorization': 'Bearer ' + token }\r",
+                  "    }, function (err, res) {\r",
+                  "        if (err || !res || res.code !== 200) return;\r",
+                  "        const data = res.json();\r",
+                  "        if (data.rows && data.rows.length > 0) {\r",
+                  "            const userId = data.rows[0].userId;\r",
+                  "            pm.sendRequest({\r",
+                  "                url: baseUrl + \"/system/user/\" + userId,\r",
+                  "                method: 'DELETE',\r",
+                  "                header: { 'Authorization': 'Bearer ' + token }\r",
+                  "            }, function (delErr, delRes) {\r",
+                  "                if (!delErr && delRes && delRes.code === 200) {\r",
+                  "                    console.log(\"🧹 清理成功:\", userName);\r",
+                  "                }\r",
+                  "            });\r",
+                  "        }\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "// 循环执行\r",
+                  "testCases.forEach((tc, index) => {\r",
+                  "    const headers = { 'Content-Type': 'application/json' };\r",
+                  "    if (!tc.skipAuth) {\r",
+                  "        headers['Authorization'] = 'Bearer ' + token;\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.sendRequest({\r",
+                  "        url: baseUrl + \"/system/user\",\r",
+                  "        method: 'POST',\r",
+                  "        header: headers,\r",
+                  "        body: { mode: 'raw', raw: JSON.stringify(tc.body) }\r",
+                  "    }, function (err, res) {\r",
+                  "        pm.test(`[${index+1}] ${tc.caseName} - HTTP 状态码应为 ${tc.httpCode}`, () => {\r",
+                  "            pm.expect(res.code).to.equal(tc.httpCode);\r",
+                  "        });\r",
+                  "\r",
+                  "        if (!err && res) {\r",
+                  "            const jsonData = res.json();\r",
+                  "            pm.test(`[${index+1}] ${tc.caseName} - 业务 code 应为 ${tc.businessCode}`, () => {\r",
+                  "                pm.expect(jsonData.code).to.equal(tc.businessCode);\r",
+                  "            });\r",
+                  "\r",
+                  "            if (tc.needClean && jsonData.code === 200 && tc.body.userName) {\r",
+                  "                setTimeout(() => deleteUserByUserName(tc.body.userName), 100);\r",
+                  "            }\r",
+                  "            if (!tc.needClean && jsonData.code === 200 && tc.body.userName && tc.body.userName.includes('test_')) {\r",
+                  "                console.warn(`⚠️ 异常用例误成功，执行清理: ${tc.caseName}`);\r",
+                  "                setTimeout(() => deleteUserByUserName(tc.body.userName), 200);\r",
+                  "            }\r",
+                  "        } else {\r",
+                  "            pm.test(`[${index+1}] ${tc.caseName} - 请求发送失败`, () => {\r",
+                  "                pm.expect.fail(\"请求异常: \" + (err ? err.message : \"未知错误\"));\r",
+                  "            });\r",
+                  "        }\r",
+                  "    });\r",
+                  "});\r",
+                  "\r",
+                  "console.log(\"✅ 新增用户批量测试已发送，共 \" + testCases.length + \" 个用例\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "查询",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ============================================================\r",
+                  "// 查询用户列表 - 批量测试（只断言 HTTP + code）\r",
+                  "// 脚本位置：Post-response\r",
+                  "// ============================================================\r",
+                  "\r",
+                  "const baseUrl = pm.environment.get(\"baseUrl\");\r",
+                  "const token = pm.environment.get(\"token\");\r",
+                  "\r",
+                  "const testCases = [\r",
+                  "    // ===== 正常查询 =====\r",
+                  "    {\r",
+                  "        caseName: \"正常分页查询\",\r",
+                  "        url: \"/system/user/list?pageNum=1&pageSize=10\",\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 200\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"按用户名搜索（admin）\",\r",
+                  "        url: \"/system/user/list?pageNum=1&pageSize=10&userName=admin\",\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 200\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"按手机号搜索\",\r",
+                  "        url: \"/system/user/list?phonenumber=13800138000\",\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 200\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"按状态筛选（正常）\",\r",
+                  "        url: \"/system/user/list?status=0\",\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 200\r",
+                  "    },\r",
+                  "    // ===== 边界值 =====\r",
+                  "    {\r",
+                  "        caseName: \"pageNum为0\",\r",
+                  "        url: \"/system/user/list?pageNum=0&pageSize=10\",\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"pageSize为0\",\r",
+                  "        url: \"/system/user/list?pageNum=1&pageSize=0\",\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500\r",
+                  "    },\r",
+                  "    {\r",
+                  "        caseName: \"pageSize超限（10000）\",\r",
+                  "        url: \"/system/user/list?pageNum=1&pageSize=10000\",\r",
+                  "        httpCode: 200,\r",
+                  "        businessCode: 500\r",
+                  "    },\r",
+                  "    // ===== 认证异常 =====\r",
+                  "    {\r",
+                  "        caseName: \"不携带token查询\",\r",
+                  "        url: \"/system/user/list?pageNum=1&pageSize=10\",\r",
+                  "        httpCode: 401,\r",
+                  "        businessCode: 401,\r",
+                  "        skipAuth: true\r",
+                  "    }\r",
+                  "];\r",
+                  "\r",
+                  "testCases.forEach((tc, index) => {\r",
+                  "    const headers = {};\r",
+                  "    if (!tc.skipAuth) {\r",
+                  "        headers['Authorization'] = 'Bearer ' + token;\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.sendRequest({\r",
+                  "        url: baseUrl + tc.url,\r",
+                  "        method: 'GET',\r",
+                  "        header: headers\r",
+                  "    }, function (err, res) {\r",
+                  "        pm.test(`[${index+1}] ${tc.caseName} - HTTP 状态码应为 ${tc.httpCode}`, () => {\r",
+                  "            pm.expect(res.code).to.equal(tc.httpCode);\r",
+                  "        });\r",
+                  "\r",
+                  "        if (!err && res) {\r",
+                  "            const jsonData = res.json();\r",
+                  "            pm.test(`[${index+1}] ${tc.caseName} - 业务 code 应为 ${tc.businessCode}`, () => {\r",
+                  "                pm.expect(jsonData.code).to.equal(tc.businessCode);\r",
+                  "            });\r",
+                  "        } else {\r",
+                  "            pm.test(`[${index+1}] ${tc.caseName} - 请求发送失败`, () => {\r",
+                  "                pm.expect.fail(\"请求异常: \" + (err ? err.message : \"未知错误\"));\r",
+                  "            });\r",
+                  "        }\r",
+                  "    });\r",
+                  "});\r",
+                  "\r",
+                  "console.log(\"✅ 查询用户列表批量测试已发送，共 \" + testCases.length + \" 个用例\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "修改",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ============================================================\r",
+                  "// 修改用户 - 批量测试（使用动态创建的用户）\r",
+                  "// 脚本会先创建一个测试用户，然后进行修改测试，最后自动清理\r",
+                  "// 脚本位置：Post-response\r",
+                  "// ============================================================\r",
+                  "\r",
+                  "const baseUrl = pm.environment.get(\"baseUrl\");\r",
+                  "const token = pm.environment.get(\"token\");\r",
+                  "const timestamp = Date.now();\r",
+                  "const testUserName = \"test_mod_\" + timestamp;\r",
+                  "\r",
+                  "// 第一步：创建测试用户\r",
+                  "pm.sendRequest({\r",
+                  "    url: baseUrl + \"/system/user\",\r",
+                  "    method: 'POST',\r",
+                  "    header: {\r",
+                  "        'Content-Type': 'application/json',\r",
+                  "        'Authorization': 'Bearer ' + token\r",
+                  "    },\r",
+                  "    body: {\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify({\r",
+                  "            userName: testUserName,\r",
+                  "            nickName: \"修改测试\",\r",
+                  "            password: \"123456\",\r",
+                  "            status: \"0\"\r",
+                  "        })\r",
+                  "    }\r",
+                  "}, function (err, createRes) {\r",
+                  "    if (err || !createRes || createRes.code !== 200) {\r",
+                  "        console.error(\"❌ 创建测试用户失败，跳过修改测试\");\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    const createData = createRes.json();\r",
+                  "    if (createData.code !== 200) {\r",
+                  "        console.error(\"❌ 创建测试用户失败，code=\" + createData.code);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "\r",
+                  "    // 查询获取 userId\r",
+                  "    pm.sendRequest({\r",
+                  "        url: baseUrl + \"/system/user/list?userName=\" + testUserName + \"&pageNum=1&pageSize=10\",\r",
+                  "        method: 'GET',\r",
+                  "        header: { 'Authorization': 'Bearer ' + token }\r",
+                  "    }, function (err, queryRes) {\r",
+                  "        if (err || !queryRes || queryRes.code !== 200) {\r",
+                  "            console.error(\"❌ 查询新用户失败\");\r",
+                  "            return;\r",
+                  "        }\r",
+                  "        const queryData = queryRes.json();\r",
+                  "        if (!queryData.rows || queryData.rows.length === 0) {\r",
+                  "            console.error(\"❌ 未找到新创建的用户\");\r",
+                  "            return;\r",
+                  "        }\r",
+                  "        const userId = queryData.rows[0].userId;\r",
+                  "        const userName = queryData.rows[0].userName;\r",
+                  "\r",
+                  "        // ===== 修改测试用例 =====\r",
+                  "        const testCases = [\r",
+                  "            {\r",
+                  "                caseName: \"正常修改昵称\",\r",
+                  "                body: { userId: userId, userName: userName, nickName: \"新昵称_\" + timestamp },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 200\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"正常修改手机号\",\r",
+                  "                body: { userId: userId, userName: userName, phonenumber: \"13900139000\" },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 200\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"缺少userId\",\r",
+                  "                body: { userName: userName, nickName: \"测试\" },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"缺少userName\",\r",
+                  "                body: { userId: userId, nickName: \"测试\" },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"修改不存在的用户\",\r",
+                  "                body: { userId: 99999, userName: \"test\", nickName: \"测试\" },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"手机号重复（与15666666666冲突）\",\r",
+                  "                body: { userId: userId, userName: userName, phonenumber: \"15666666666\" },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"不携带token修改\",\r",
+                  "                body: { userId: userId, userName: userName, nickName: \"测试\" },\r",
+                  "                httpCode: 401,\r",
+                  "                businessCode: 401,\r",
+                  "                skipAuth: true\r",
+                  "            }\r",
+                  "        ];\r",
+                  "\r",
+                  "        // 执行修改用例\r",
+                  "        testCases.forEach((tc, index) => {\r",
+                  "            const headers = { 'Content-Type': 'application/json' };\r",
+                  "            if (!tc.skipAuth) {\r",
+                  "                headers['Authorization'] = 'Bearer ' + token;\r",
+                  "            }\r",
+                  "\r",
+                  "            pm.sendRequest({\r",
+                  "                url: baseUrl + \"/system/user\",\r",
+                  "                method: 'PUT',\r",
+                  "                header: headers,\r",
+                  "                body: { mode: 'raw', raw: JSON.stringify(tc.body) }\r",
+                  "            }, function (err, res) {\r",
+                  "                pm.test(`[${index+1}] ${tc.caseName} - HTTP 状态码应为 ${tc.httpCode}`, () => {\r",
+                  "                    pm.expect(res.code).to.equal(tc.httpCode);\r",
+                  "                });\r",
+                  "\r",
+                  "                if (!err && res) {\r",
+                  "                    const jsonData = res.json();\r",
+                  "                    pm.test(`[${index+1}] ${tc.caseName} - 业务 code 应为 ${tc.businessCode}`, () => {\r",
+                  "                        pm.expect(jsonData.code).to.equal(tc.businessCode);\r",
+                  "                    });\r",
+                  "                } else {\r",
+                  "                    pm.test(`[${index+1}] ${tc.caseName} - 请求发送失败`, () => {\r",
+                  "                        pm.expect.fail(\"请求异常: \" + (err ? err.message : \"未知错误\"));\r",
+                  "                    });\r",
+                  "                }\r",
+                  "            });\r",
+                  "        });\r",
+                  "\r",
+                  "        // ===== 清理：删除测试用户 =====\r",
+                  "        setTimeout(() => {\r",
+                  "            pm.sendRequest({\r",
+                  "                url: baseUrl + \"/system/user/\" + userId,\r",
+                  "                method: 'DELETE',\r",
+                  "                header: { 'Authorization': 'Bearer ' + token }\r",
+                  "            }, function (delErr, delRes) {\r",
+                  "                if (!delErr && delRes && delRes.code === 200) {\r",
+                  "                    console.log(\"🧹 清理成功: \" + userName);\r",
+                  "                }\r",
+                  "            });\r",
+                  "        }, 500);\r",
+                  "\r",
+                  "        console.log(\"✅ 修改用户批量测试已发送，共 \" + testCases.length + \" 个用例\");\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "删除",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ============================================================\r",
+                  "// 删除用户 - 批量测试（使用动态创建的用户）\r",
+                  "// 脚本会先创建一个测试用户，然后进行删除测试，最后自动清理\r",
+                  "// 脚本位置：Post-response\r",
+                  "// ============================================================\r",
+                  "\r",
+                  "const baseUrl = pm.environment.get(\"baseUrl\");\r",
+                  "const token = pm.environment.get(\"token\");\r",
+                  "const timestamp = Date.now();\r",
+                  "const testUserName = \"test_del_\" + timestamp;\r",
+                  "\r",
+                  "// 第一步：创建测试用户\r",
+                  "pm.sendRequest({\r",
+                  "    url: baseUrl + \"/system/user\",\r",
+                  "    method: 'POST',\r",
+                  "    header: {\r",
+                  "        'Content-Type': 'application/json',\r",
+                  "        'Authorization': 'Bearer ' + token\r",
+                  "    },\r",
+                  "    body: {\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify({\r",
+                  "            userName: testUserName,\r",
+                  "            nickName: \"删除测试\",\r",
+                  "            password: \"123456\",\r",
+                  "            status: \"0\"\r",
+                  "        })\r",
+                  "    }\r",
+                  "}, function (err, createRes) {\r",
+                  "    if (err || !createRes || createRes.code !== 200) {\r",
+                  "        console.error(\"❌ 创建测试用户失败，跳过删除测试\");\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    const createData = createRes.json();\r",
+                  "    if (createData.code !== 200) {\r",
+                  "        console.error(\"❌ 创建测试用户失败，code=\" + createData.code);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "\r",
+                  "    // 查询获取 userId\r",
+                  "    pm.sendRequest({\r",
+                  "        url: baseUrl + \"/system/user/list?userName=\" + testUserName + \"&pageNum=1&pageSize=10\",\r",
+                  "        method: 'GET',\r",
+                  "        header: { 'Authorization': 'Bearer ' + token }\r",
+                  "    }, function (err, queryRes) {\r",
+                  "        if (err || !queryRes || queryRes.code !== 200) {\r",
+                  "            console.error(\"❌ 查询新用户失败\");\r",
+                  "            return;\r",
+                  "        }\r",
+                  "        const queryData = queryRes.json();\r",
+                  "        if (!queryData.rows || queryData.rows.length === 0) {\r",
+                  "            console.error(\"❌ 未找到新创建的用户\");\r",
+                  "            return;\r",
+                  "        }\r",
+                  "        const userId = queryData.rows[0].userId;\r",
+                  "\r",
+                  "        // ===== 删除测试用例 =====\r",
+                  "        const testCases = [\r",
+                  "            {\r",
+                  "                caseName: \"正常删除（动态创建的用户）\",\r",
+                  "                url: \"/system/user/\" + userId,\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 200\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"删除不存在的用户（99999）\",\r",
+                  "                url: \"/system/user/99999\",\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"删除admin用户（userId=1）\",\r",
+                  "                url: \"/system/user/1\",\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"删除当前登录用户（admin）\",\r",
+                  "                url: \"/system/user/1\",\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"不携带token删除\",\r",
+                  "                url: \"/system/user/\" + userId,\r",
+                  "                httpCode: 401,\r",
+                  "                businessCode: 401,\r",
+                  "                skipAuth: true\r",
+                  "            }\r",
+                  "        ];\r",
+                  "\r",
+                  "        // 执行删除用例\r",
+                  "        testCases.forEach((tc, index) => {\r",
+                  "            const headers = {};\r",
+                  "            if (!tc.skipAuth) {\r",
+                  "                headers['Authorization'] = 'Bearer ' + token;\r",
+                  "            }\r",
+                  "\r",
+                  "            pm.sendRequest({\r",
+                  "                url: baseUrl + tc.url,\r",
+                  "                method: 'DELETE',\r",
+                  "                header: headers\r",
+                  "            }, function (err, res) {\r",
+                  "                pm.test(`[${index+1}] ${tc.caseName} - HTTP 状态码应为 ${tc.httpCode}`, () => {\r",
+                  "                    pm.expect(res.code).to.equal(tc.httpCode);\r",
+                  "                });\r",
+                  "\r",
+                  "                if (!err && res) {\r",
+                  "                    const jsonData = res.json();\r",
+                  "                    pm.test(`[${index+1}] ${tc.caseName} - 业务 code 应为 ${tc.businessCode}`, () => {\r",
+                  "                        pm.expect(jsonData.code).to.equal(tc.businessCode);\r",
+                  "                    });\r",
+                  "                } else {\r",
+                  "                    pm.test(`[${index+1}] ${tc.caseName} - 请求发送失败`, () => {\r",
+                  "                        pm.expect.fail(\"请求异常: \" + (err ? err.message : \"未知错误\"));\r",
+                  "                    });\r",
+                  "                }\r",
+                  "            });\r",
+                  "        });\r",
+                  "\r",
+                  "        // ===== 清理：如果正常删除用例成功，用户已被删除；否则再次尝试删除 =====\r",
+                  "        setTimeout(() => {\r",
+                  "            pm.sendRequest({\r",
+                  "                url: baseUrl + \"/system/user/\" + userId,\r",
+                  "                method: 'DELETE',\r",
+                  "                header: { 'Authorization': 'Bearer ' + token }\r",
+                  "            }, function (delErr, delRes) {\r",
+                  "                if (!delErr && delRes && delRes.code === 200) {\r",
+                  "                    console.log(\"🧹 清理成功: \" + testUserName);\r",
+                  "                }\r",
+                  "            });\r",
+                  "        }, 500);\r",
+                  "\r",
+                  "        console.log(\"✅ 删除用户批量测试已发送，共 \" + testCases.length + \" 个用例\");\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json;charset=UTF-8",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "批量删除所有测试用户",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ============================================================\r",
+                  "// 🧹 批量删除所有 test_ 开头的用户\r",
+                  "// 运行前请确保：环境变量中已设置 baseUrl 和 token\r",
+                  "// 脚本位置：Post-response\r",
+                  "// ============================================================\r",
+                  "\r",
+                  "const baseUrl = pm.environment.get(\"baseUrl\");\r",
+                  "const token = pm.environment.get(\"token\");\r",
+                  "\r",
+                  "console.log(\"========================================\");\r",
+                  "console.log(\"🧹 开始清理所有 test_ 开头的用户...\");\r",
+                  "console.log(\"========================================\");\r",
+                  "\r",
+                  "// 第一步：查询所有 test_ 开头的用户\r",
+                  "pm.sendRequest({\r",
+                  "    url: baseUrl + \"/system/user/list?pageNum=1&pageSize=1000&userName=test_\",\r",
+                  "    method: 'GET',\r",
+                  "    header: {\r",
+                  "        'Authorization': 'Bearer ' + token\r",
+                  "    }\r",
+                  "}, function (err, res) {\r",
+                  "    // 检查 HTTP 状态码\r",
+                  "    if (err || res.code !== 200) {\r",
+                  "        console.error(\"❌ 查询失败:\", err ? err.message : \"HTTP \" + res.code);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "\r",
+                  "    // 解析响应体\r",
+                  "    const data = res.json();\r",
+                  "    \r",
+                  "    // 检查业务 code\r",
+                  "    if (data.code !== 200) {\r",
+                  "        console.error(\"❌ 查询失败:\", data.msg);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "\r",
+                  "    if (!data.rows || data.rows.length === 0) {\r",
+                  "        console.log(\"✅ 没有找到需要清理的测试用户，数据库已干净\");\r",
+                  "        return;\r",
+                  "    }\r",
+                  "\r",
+                  "    // 提取所有 userId，用逗号连接\r",
+                  "    const userIds = data.rows.map(user => user.userId).join(',');\r",
+                  "    console.log(\"📋 找到 \" + data.rows.length + \" 个测试用户\");\r",
+                  "    console.log(\"   IDs: \" + userIds);\r",
+                  "\r",
+                  "    // 第二步：调用批量删除接口\r",
+                  "    pm.sendRequest({\r",
+                  "        url: baseUrl + \"/system/user/\" + userIds,\r",
+                  "        method: 'DELETE',\r",
+                  "        header: {\r",
+                  "            'Authorization': 'Bearer ' + token\r",
+                  "        }\r",
+                  "    }, function (err, delRes) {\r",
+                  "        if (err || delRes.code !== 200) {\r",
+                  "            console.error(\"❌ 批量删除失败:\", err ? err.message : \"HTTP \" + delRes.code);\r",
+                  "            return;\r",
+                  "        }\r",
+                  "\r",
+                  "        const delData = delRes.json();\r",
+                  "        if (delData.code === 200) {\r",
+                  "            console.log(\"✅ 批量删除成功！共删除 \" + data.rows.length + \" 个用户\");\r",
+                  "        } else {\r",
+                  "            console.warn(\"⚠️ 批量删除失败:\", delData.msg);\r",
+                  "        }\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json;charset=UTF-8",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/system/user",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "system",
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "重置密码",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ============================================================\r",
+                  "// 重置密码 - 批量测试（使用动态创建的用户）\r",
+                  "// 脚本会先创建一个测试用户，然后进行重置密码测试，最后自动清理\r",
+                  "// 脚本位置：Post-response\r",
+                  "// ============================================================\r",
+                  "\r",
+                  "const baseUrl = pm.environment.get(\"baseUrl\");\r",
+                  "const token = pm.environment.get(\"token\");\r",
+                  "const timestamp = Date.now();\r",
+                  "const testUserName = \"test_reset_\" + timestamp;\r",
+                  "\r",
+                  "// 第一步：创建测试用户\r",
+                  "pm.sendRequest({\r",
+                  "    url: baseUrl + \"/system/user\",\r",
+                  "    method: 'POST',\r",
+                  "    header: {\r",
+                  "        'Content-Type': 'application/json',\r",
+                  "        'Authorization': 'Bearer ' + token\r",
+                  "    },\r",
+                  "    body: {\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify({\r",
+                  "            userName: testUserName,\r",
+                  "            nickName: \"重置密码测试\",\r",
+                  "            password: \"123456\",\r",
+                  "            status: \"0\"\r",
+                  "        })\r",
+                  "    }\r",
+                  "}, function (err, createRes) {\r",
+                  "    if (err || !createRes || createRes.code !== 200) {\r",
+                  "        console.error(\"❌ 创建测试用户失败，跳过重置密码测试\");\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    const createData = createRes.json();\r",
+                  "    if (createData.code !== 200) {\r",
+                  "        console.error(\"❌ 创建测试用户失败，code=\" + createData.code);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "\r",
+                  "    // 查询获取 userId\r",
+                  "    pm.sendRequest({\r",
+                  "        url: baseUrl + \"/system/user/list?userName=\" + testUserName + \"&pageNum=1&pageSize=10\",\r",
+                  "        method: 'GET',\r",
+                  "        header: { 'Authorization': 'Bearer ' + token }\r",
+                  "    }, function (err, queryRes) {\r",
+                  "        if (err || !queryRes || queryRes.code !== 200) {\r",
+                  "            console.error(\"❌ 查询新用户失败\");\r",
+                  "            return;\r",
+                  "        }\r",
+                  "        const queryData = queryRes.json();\r",
+                  "        if (!queryData.rows || queryData.rows.length === 0) {\r",
+                  "            console.error(\"❌ 未找到新创建的用户\");\r",
+                  "            return;\r",
+                  "        }\r",
+                  "        const userId = queryData.rows[0].userId;\r",
+                  "\r",
+                  "        // ===== 重置密码测试用例 =====\r",
+                  "        const testCases = [\r",
+                  "            {\r",
+                  "                caseName: \"正常重置密码\",\r",
+                  "                body: { userId: userId, password: \"new123456\" },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 200\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"重置密码为空\",\r",
+                  "                body: { userId: userId, password: \"\" },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"重置密码长度不足（5位）\",\r",
+                  "                body: { userId: userId, password: \"12345\" },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"重置密码长度超长（21位）\",\r",
+                  "                body: { userId: userId, password: \"123456789012345678901\" },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"重置密码-用户不存在\",\r",
+                  "                body: { userId: 99999, password: \"new123456\" },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"重置密码-缺少userId\",\r",
+                  "                body: { password: \"new123456\" },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"重置密码-不携带token\",\r",
+                  "                body: { userId: userId, password: \"new123456\" },\r",
+                  "                httpCode: 401,\r",
+                  "                businessCode: 401,\r",
+                  "                skipAuth: true\r",
+                  "            }\r",
+                  "        ];\r",
+                  "\r",
+                  "        // 执行用例\r",
+                  "        testCases.forEach((tc, index) => {\r",
+                  "            const headers = { 'Content-Type': 'application/json' };\r",
+                  "            if (!tc.skipAuth) {\r",
+                  "                headers['Authorization'] = 'Bearer ' + token;\r",
+                  "            }\r",
+                  "\r",
+                  "            pm.sendRequest({\r",
+                  "                url: baseUrl + \"/system/user/resetPwd\",\r",
+                  "                method: 'PUT',\r",
+                  "                header: headers,\r",
+                  "                body: { mode: 'raw', raw: JSON.stringify(tc.body) }\r",
+                  "            }, function (err, res) {\r",
+                  "                pm.test(`[${index+1}] ${tc.caseName} - HTTP 状态码应为 ${tc.httpCode}`, () => {\r",
+                  "                    pm.expect(res.code).to.equal(tc.httpCode);\r",
+                  "                });\r",
+                  "\r",
+                  "                if (!err && res) {\r",
+                  "                    const jsonData = res.json();\r",
+                  "                    pm.test(`[${index+1}] ${tc.caseName} - 业务 code 应为 ${tc.businessCode}`, () => {\r",
+                  "                        pm.expect(jsonData.code).to.equal(tc.businessCode);\r",
+                  "                    });\r",
+                  "                } else {\r",
+                  "                    pm.test(`[${index+1}] ${tc.caseName} - 请求发送失败`, () => {\r",
+                  "                        pm.expect.fail(\"请求异常: \" + (err ? err.message : \"未知错误\"));\r",
+                  "                    });\r",
+                  "                }\r",
+                  "            });\r",
+                  "        });\r",
+                  "\r",
+                  "        // ===== 清理：删除测试用户 =====\r",
+                  "        setTimeout(() => {\r",
+                  "            pm.sendRequest({\r",
+                  "                url: baseUrl + \"/system/user/\" + userId,\r",
+                  "                method: 'DELETE',\r",
+                  "                header: { 'Authorization': 'Bearer ' + token }\r",
+                  "            }, function (delErr, delRes) {\r",
+                  "                if (!delErr && delRes && delRes.code === 200) {\r",
+                  "                    console.log(\"🧹 清理成功: \" + testUserName);\r",
+                  "                }\r",
+                  "            });\r",
+                  "        }, 500);\r",
+                  "\r",
+                  "        console.log(\"✅ 重置密码批量测试已发送，共 \" + testCases.length + \" 个用例\");\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json;charset=UTF-8",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "分配角色",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ============================================================\r",
+                  "// 分配角色 - 批量测试（使用动态创建的用户）\r",
+                  "// 覆盖用例：正常分配、分配多个、空列表、角色ID不存在、用户不存在、缺少userId/roleIds、不携带token\r",
+                  "// 脚本位置：Post-response\r",
+                  "// ============================================================\r",
+                  "\r",
+                  "const baseUrl = pm.environment.get(\"baseUrl\");\r",
+                  "const token = pm.environment.get(\"token\");\r",
+                  "const timestamp = Date.now();\r",
+                  "const testUserName = \"test_role_\" + timestamp;\r",
+                  "\r",
+                  "// 已知存在的角色ID（2 是若依默认的\"普通角色\"，3 需确认是否存在，如果不存在可改为其他存在的ID）\r",
+                  "const existingRoleId = 2;\r",
+                  "const existingRoleId2 = 3; // 用于\"分配多个角色\"用例，如果系统中没有3，可以改用其他存在的ID，或直接去掉该用例\r",
+                  "\r",
+                  "// 第一步：创建测试用户\r",
+                  "pm.sendRequest({\r",
+                  "    url: baseUrl + \"/system/user\",\r",
+                  "    method: 'POST',\r",
+                  "    header: {\r",
+                  "        'Content-Type': 'application/json',\r",
+                  "        'Authorization': 'Bearer ' + token\r",
+                  "    },\r",
+                  "    body: {\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify({\r",
+                  "            userName: testUserName,\r",
+                  "            nickName: \"分配角色测试\",\r",
+                  "            password: \"123456\",\r",
+                  "            status: \"0\"\r",
+                  "        })\r",
+                  "    }\r",
+                  "}, function (err, createRes) {\r",
+                  "    if (err || !createRes || createRes.code !== 200) {\r",
+                  "        console.error(\"❌ 创建测试用户失败，跳过分配角色测试\");\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    const createData = createRes.json();\r",
+                  "    if (createData.code !== 200) {\r",
+                  "        console.error(\"❌ 创建测试用户失败，code=\" + createData.code);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "\r",
+                  "    // 查询获取 userId\r",
+                  "    pm.sendRequest({\r",
+                  "        url: baseUrl + \"/system/user/list?userName=\" + testUserName + \"&pageNum=1&pageSize=10\",\r",
+                  "        method: 'GET',\r",
+                  "        header: { 'Authorization': 'Bearer ' + token }\r",
+                  "    }, function (err, queryRes) {\r",
+                  "        if (err || !queryRes || queryRes.code !== 200) {\r",
+                  "            console.error(\"❌ 查询新用户失败\");\r",
+                  "            return;\r",
+                  "        }\r",
+                  "        const queryData = queryRes.json();\r",
+                  "        if (!queryData.rows || queryData.rows.length === 0) {\r",
+                  "            console.error(\"❌ 未找到新创建的用户\");\r",
+                  "            return;\r",
+                  "        }\r",
+                  "        const userId = queryData.rows[0].userId;\r",
+                  "\r",
+                  "        // ===== 分配角色测试用例（8个） =====\r",
+                  "        const testCases = [\r",
+                  "            {\r",
+                  "                caseName: \"正常分配角色\",\r",
+                  "                body: { userId: userId, roleIds: [existingRoleId] },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 200\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"分配多个角色\",\r",
+                  "                body: { userId: userId, roleIds: [existingRoleId, existingRoleId2] },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 200\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"分配空角色列表\",\r",
+                  "                body: { userId: userId, roleIds: [] },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 200\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"角色ID不存在\",\r",
+                  "                body: { userId: userId, roleIds: [99999] },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"分配角色-用户不存在\",\r",
+                  "                body: { userId: 99999, roleIds: [existingRoleId] },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"分配角色-缺少userId\",\r",
+                  "                body: { roleIds: [existingRoleId] },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"分配角色-缺少roleIds\",\r",
+                  "                body: { userId: userId },\r",
+                  "                httpCode: 200,\r",
+                  "                businessCode: 500\r",
+                  "            },\r",
+                  "            {\r",
+                  "                caseName: \"分配角色-不携带token\",\r",
+                  "                body: { userId: userId, roleIds: [existingRoleId] },\r",
+                  "                httpCode: 401,\r",
+                  "                businessCode: 401,\r",
+                  "                skipAuth: true\r",
+                  "            }\r",
+                  "        ];\r",
+                  "\r",
+                  "        // 执行用例\r",
+                  "        testCases.forEach((tc, index) => {\r",
+                  "            const headers = { 'Content-Type': 'application/json' };\r",
+                  "            if (!tc.skipAuth) {\r",
+                  "                headers['Authorization'] = 'Bearer ' + token;\r",
+                  "            }\r",
+                  "\r",
+                  "            pm.sendRequest({\r",
+                  "                url: baseUrl + \"/system/user/authRole\",\r",
+                  "                method: 'PUT',\r",
+                  "                header: headers,\r",
+                  "                body: { mode: 'raw', raw: JSON.stringify(tc.body) }\r",
+                  "            }, function (err, res) {\r",
+                  "                pm.test(`[${index+1}] ${tc.caseName} - HTTP 状态码应为 ${tc.httpCode}`, () => {\r",
+                  "                    pm.expect(res.code).to.equal(tc.httpCode);\r",
+                  "                });\r",
+                  "\r",
+                  "                if (!err && res) {\r",
+                  "                    const jsonData = res.json();\r",
+                  "                    pm.test(`[${index+1}] ${tc.caseName} - 业务 code 应为 ${tc.businessCode}`, () => {\r",
+                  "                        pm.expect(jsonData.code).to.equal(tc.businessCode);\r",
+                  "                    });\r",
+                  "                } else {\r",
+                  "                    pm.test(`[${index+1}] ${tc.caseName} - 请求发送失败`, () => {\r",
+                  "                        pm.expect.fail(\"请求异常: \" + (err ? err.message : \"未知错误\"));\r",
+                  "                    });\r",
+                  "                }\r",
+                  "            });\r",
+                  "        });\r",
+                  "\r",
+                  "        // ===== 清理：删除测试用户 =====\r",
+                  "        setTimeout(() => {\r",
+                  "            pm.sendRequest({\r",
+                  "                url: baseUrl + \"/system/user/\" + userId,\r",
+                  "                method: 'DELETE',\r",
+                  "                header: { 'Authorization': 'Bearer ' + token }\r",
+                  "            }, function (delErr, delRes) {\r",
+                  "                if (!delErr && delRes && delRes.code === 200) {\r",
+                  "                    console.log(\"🧹 清理成功: \" + testUserName);\r",
+                  "                }\r",
+                  "            });\r",
+                  "        }, 1000);\r",
+                  "\r",
+                  "        console.log(\"✅ 分配角色批量测试已发送，共 \" + testCases.length + \" 个用例\");\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "登录模块（关闭验证码）",
+      "item": [
+        {
+          "name": "正确登录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ===== 1. HTTP 状态码断言 =====\r",
+                  "pm.test(\"HTTP 状态码应为 200\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// ===== 2. 解析响应体 =====\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "// ===== 3. 业务 code 断言 =====\r",
+                  "pm.test(\"业务 code 应为 200\", () => {\r",
+                  "    pm.expect(jsonData.code).to.equal(200);\r",
+                  "});\r",
+                  "\r",
+                  "// ===== 4. 消息断言 =====\r",
+                  "pm.test(\"消息应为 '操作成功'\", () => {\r",
+                  "    pm.expect(jsonData.msg).to.equal(\"操作成功\");\r",
+                  "});\r",
+                  "\r",
+                  "// ===== 5. token 存在性断言并保存 =====\r",
+                  "pm.test(\"返回 token 且不为空\", () => {\r",
+                  "    pm.expect(jsonData.token).to.be.a('string').and.not.empty;\r",
+                  "});\r",
+                  "if (jsonData.token) {\r",
+                  "    pm.environment.set(\"token\", jsonData.token);\r",
+                  "    console.log(\"✅ Token已保存\");\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json;charset=UTF-8",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"admin\",\r\n\"password\":\"admin123\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "密码错误",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 状态码为 200\", () => pm.response.to.have.status(200));\r",
+                  "\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"业务 code 应为 500\", () => pm.expect(jsonData.code).to.equal(500));\r",
+                  "pm.test(\"错误消息应包含 '密码错误'\", () => pm.expect(jsonData.msg).to.include(\"密码错误\"));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json;charset=UTF-8",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"wrong\"   \r\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "用户名为空",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 状态码为 200\", () => pm.response.to.have.status(200));\r",
+                  "\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"业务 code 应为 500\", () => pm.expect(jsonData.code).to.equal(500));\r",
+                  "pm.test(\"错误消息应包含 '错误'\", () => pm.expect(jsonData.msg).to.include(\"错误\"));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json;charset=UTF-8",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"\",\r\n\"password\":\"admin123\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "密码为空",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 状态码为 200\", () => pm.response.to.have.status(200));\r",
+                  "\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"业务 code 应为 500\", () => pm.expect(jsonData.code).to.equal(500));\r",
+                  "pm.test(\"错误消息应包含 '密码错误'\", () => pm.expect(jsonData.msg).to.include(\"密码错误\"));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json;charset=UTF-8",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"admin\",\r\n\"password\":\"\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "验证码模块",
+      "item": [
+        {
+          "name": "验证码",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 1. 解析接口返回的JSON数据\r",
+                  "let response = pm.response.json();\r",
+                  "\r",
+                  "// 2. 从返回数据中提取Base64字符串，并补全图片头信息\r",
+                  "let imgBase64 = `data:image/png;base64,${response.img}`;\r",
+                  "\r",
+                  "// 3. 将uuid保存到环境变量（供登录接口使用）\r",
+                  "pm.environment.set(\"uuid\", response.uuid);\r",
+                  "\r",
+                  "// 4. 定义HTML模板，用于显示图片\r",
+                  "let template = `\r",
+                  "    <div style=\"text-align: center;\">\r",
+                  "        <h4>验证码图片</h4>\r",
+                  "        <img src=\"{{imgBase64}}\" style=\"max-width: 100%; border: 1px solid #ddd; border-radius: 4px;\" />\r",
+                  "        <p>uuid: {{uuid}}</p>\r",
+                  "    </div>\r",
+                  "`;\r",
+                  "\r",
+                  "// 5. 渲染图片\r",
+                  "pm.visualizer.set(template, { \r",
+                  "    imgBase64: imgBase64,\r",
+                  "    uuid: response.uuid\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/captchaImage",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "captchaImage"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "验证码错误",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 状态码为 200\", () => pm.response.to.have.status(200));\r",
+                  "\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"业务 code 应为 500\", () => pm.expect(jsonData.code).to.equal(500));\r",
+                  "pm.test(\"错误消息应包含 '验证码错误'\", () => pm.expect(jsonData.msg).to.include(\"验证码错误\"));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json;charset=UTF-8",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin123\",\r\n    \"code\":\"wrong\",\r\n    \"uuid\":{{uuid}}   \r\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
